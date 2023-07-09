@@ -25,8 +25,26 @@ function ToyCard({ toy, onDeleteToy, onUpdateToy }) {
       },
       body: JSON.stringify(updateObj),
     })
-      .then((r) => r.json())
-      .then((updatedToy) => onUpdateToy(updatedToy));
+      .then((response) => {
+        if (response.status === 204) {
+          // Update toy locally without relying on response JSON
+          const updatedToy = { ...toy, likes: toy.likes + 1 };
+          onUpdateToy(updatedToy);
+        } else if (!response.ok) {
+          throw new Error(`Request failed with status ${response.status}`);
+        } else {
+          return response.json();
+        }
+      })
+      .then((updatedToy) => {
+        if (updatedToy) {
+          onUpdateToy(updatedToy);
+        }
+      })
+      .catch((error) => {
+        console.error(error);
+        // Handle the error appropriately (e.g., display an error message)
+      });
   }
 
   return (
